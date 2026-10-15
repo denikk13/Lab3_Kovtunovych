@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:lab_1.ViewModels"
+             x:Class="lab_1.Views.StudentDetailPage"
+             Title="Деталі студента">
+
+    <ContentPage.BindingContext>
+        <viewmodels:StudentDetailViewModel />
+    </ContentPage.BindingContext>
+
+    <VerticalStackLayout Padding="20" Spacing="15">
+        <Label Text="ПІБ Студента:" FontSize="14" TextColor="Gray" />
+        <Entry Text="{Binding FullName}" FontSize="18" />
+
+        <Label Text="Група:" FontSize="14" TextColor="Gray" />
+        <Entry Text="{Binding Group}" FontSize="18" />
+
+        <Label Text="Середній бал:" FontSize="14" TextColor="Gray" />
+        <HorizontalStackLayout Spacing="15">
+            <Label Text="{Binding AverageScore}" FontSize="22" FontAttributes="Bold" VerticalOptions="Center"/>
+            <Stepper Value="{Binding AverageScore}" Minimum="1" Maximum="5" Increment="0.1" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+
+        <BoxView HeightRequest="1" Color="LightGray" Margin="0,15"/>
+
+        <Button Text="Змінити тему (Світла/Темна)" Command="{Binding ToggleThemeCommand}" BackgroundColor="Black" TextColor="White" Margin="0,0,0,10"/>
+
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+            <Button Grid.Column="0" Text="Назад" Command="{Binding GoBackCommand}" BackgroundColor="Gray" />
+            <Button Grid.Column="1" Text="Зберегти" Command="{Binding SaveCommand}" BackgroundColor="#2B0B98" TextColor="White" />
+        </Grid>
+    </VerticalStackLayout>
+</ContentPage>
