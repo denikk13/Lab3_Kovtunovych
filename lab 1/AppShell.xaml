@@ -4,11 +4,18 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:lab_1"
+    xmlns:views="clr-namespace:lab_1.Views"
     Title="lab_1">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <TabBar>
+        <ShellContent
+            Title="Students"
+            ContentTemplate="{DataTemplate local:MainPage}"
+            Route="MainPage" />
+        <ShellContent
+            Title="Logs"
+            ContentTemplate="{DataTemplate views:LogsPage}"
+            Route="LogsPage" />
+    </TabBar>
 
 </Shell>

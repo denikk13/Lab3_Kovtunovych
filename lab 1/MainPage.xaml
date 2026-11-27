@@ -16,7 +16,7 @@
             <Entry Text="{Binding Group, Mode=TwoWay}" Placeholder="Група" />
 
             <Label Text="{Binding AverageScore, StringFormat='Середній бал: {0:F1}'}" />
-            <Slider Value="{Binding AverageScore, Mode=TwoWay}" Minimum="0" Maximum="5" />
+            <Slider Value="{Binding AverageScore, Mode=TwoWay}" Minimum="0" Maximum="10" />
 
             <!-- Відображення (OneWay) -->
             <Label Text="{Binding FullName, StringFormat='Студент: {0}'}" 
