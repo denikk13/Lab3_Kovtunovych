@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using lab_1.Models;
+using lab_1.Services;
+using lab_1.Views;
 using Serilog;
 
 namespace lab_1.ViewModels
@@ -10,6 +12,8 @@ namespace lab_1.ViewModels
     public class StudentViewModel : IQueryAttributable, INotifyPropertyChanged
     {
         private readonly ILogger _logger = Log.ForContext<StudentViewModel>();
+        private readonly ISessionService _session;
+        private readonly IAuthService _authService;
 
         public ObservableCollection<Student> Students { get; set; }
 
@@ -46,21 +50,41 @@ namespace lab_1.ViewModels
             }
         }
 
+        // Властивості для прив'язки в UI залежно від ролі (Лаб 6)
+        public bool IsAdminPanelVisible => _session.IsInRole(UserRole.Administrator);
+        public string CurrentUserInfo => $"Користувач: {_session.CurrentUser ?? "Гість"} ({_session.CurrentRole?.ToString() ?? "Без ролі"})";
+
         public ICommand AddStudentCommand { get; }
         public ICommand OpenDetailsCommand { get; }
+        public ICommand DeleteStudentCommand { get; }
+        public ICommand ManageUsersCommand { get; }
+        public ICommand LogoutCommand { get; }
 
-        public StudentViewModel()
+        public StudentViewModel(ISessionService session, IAuthService authService)
         {
+            _session = session;
+            _authService = authService;
+
             Students = new ObservableCollection<Student>
             {
                 new Student { Id = 1, FullName = "Іваненко Іван", Group = "2-4", AverageScore = 4.5 },
                 new Student { Id = 2, FullName = "Петренко Петро", Group = "2-4", AverageScore = 3.8 }
             };
 
-            _logger.Information("StudentViewModel initialized with {InitialCount} students", Students.Count);
+            _logger.Information("StudentViewModel initialized with {InitialCount} students for role {Role}",
+                Students.Count, _session.CurrentRole);
 
             AddStudentCommand = new Command(AddStudent);
             OpenDetailsCommand = new Command<Student>(async student => await OpenDetailsAsync(student));
+            DeleteStudentCommand = new Command<Student>(async student => await DeleteStudentAsync(student));
+            ManageUsersCommand = new Command(async () => await ManageUsersAsync());
+            LogoutCommand = new Command(async () => await LogoutAsync());
+        }
+
+        public void RefreshRoleState()
+        {
+            OnPropertyChanged(nameof(IsAdminPanelVisible));
+            OnPropertyChanged(nameof(CurrentUserInfo));
         }
 
         private void AddStudent()
@@ -114,6 +138,50 @@ namespace lab_1.ViewModels
             {
                 _logger.Error(ex, "Navigation to studentdetail failed for Id={Id}", student.Id);
             }
+        }
+
+        // Перевірка ролі на рівні команди для критичної дії (Лаб 6, п. 4)
+        private async Task DeleteStudentAsync(Student? student)
+        {
+            if (student == null)
+                return;
+
+            if (!_session.IsInRole(UserRole.Administrator))
+            {
+                _logger.Warning("Access denied: user {User} ({Role}) tried to delete student Id={Id}",
+                    _session.CurrentUser, _session.CurrentRole, student.Id);
+
+                await Shell.Current.DisplayAlert(
+                    "Доступ заборонено",
+                    "Видалення студентів доступне лише користувачам із роллю Administrator.",
+                    "ОК");
+                return;
+            }
+
+            Students.Remove(student);
+            _logger.Information("Administrator {User} deleted student Id={Id} ({FullName})",
+                _session.CurrentUser, student.Id, student.FullName);
+        }
+
+        // Дія, видима лише адміністратору в UI (Лаб 6, п. 3)
+        private async Task ManageUsersAsync()
+        {
+            if (!_session.IsInRole(UserRole.Administrator))
+            {
+                await Shell.Current.DisplayAlert("Доступ заборонено", "Дія доступна лише адміністратору.", "ОК");
+                return;
+            }
+
+            await Shell.Current.DisplayAlert(
+                "Керування користувачами",
+                "Панель адміністратора: активні ролі Dispatcher та Administrator.",
+                "ОК");
+        }
+
+        private async Task LogoutAsync()
+        {
+            await _authService.LogoutAsync();
+            await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
         }
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)

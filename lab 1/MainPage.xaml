@@ -4,12 +4,20 @@
              xmlns:viewmodels="clr-namespace:lab_1.ViewModels"
              x:Class="lab_1.MainPage">
 
-    <ContentPage.BindingContext>
-        <viewmodels:StudentViewModel />
-    </ContentPage.BindingContext>
-
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
+
+            <!-- Панель користувача та ролі (Лаб 6) -->
+            <HorizontalStackLayout Spacing="10">
+                <Label Text="{Binding CurrentUserInfo}"
+                       VerticalOptions="Center"
+                       FontAttributes="Bold" />
+                <Button Text="Вийти"
+                        Command="{Binding LogoutCommand}" />
+                <Button Text="Керування користувачами"
+                        Command="{Binding ManageUsersCommand}"
+                        IsVisible="{Binding IsAdminPanelVisible}" />
+            </HorizontalStackLayout>
 
             <!-- Поля вводу (TwoWay) -->
             <Entry Text="{Binding FullName, Mode=TwoWay}" Placeholder="ПІБ студента" />
@@ -20,7 +28,6 @@
 
             <!-- Відображення (OneWay) -->
             <Label Text="{Binding FullName, StringFormat='Студент: {0}'}" 
-                   TextColor="{Binding ScoreColor}" 
                    FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Group, StringFormat='Група: {0}'}" />
 
@@ -37,10 +44,14 @@
                             <Label Text="{Binding Group}" VerticalOptions="Center"/>
                             <Label Text="{Binding AverageScore, StringFormat='(Бал: {0:F1})'}" VerticalOptions="Center"/>
 
-                            <!-- Додана кнопка -->
                             <Button Text="Детальніше" 
-                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:StudentViewModel}}, Path=OpenDetailsCommand}"
-                CommandParameter="{Binding .}" />
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:StudentViewModel}}, Path=OpenDetailsCommand}"
+                                    CommandParameter="{Binding .}" />
+
+                            <!-- Кнопка видалення з перевіркою ролі в команді (Лаб 6) -->
+                            <Button Text="Видалити"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:StudentViewModel}}, Path=DeleteStudentCommand}"
+                                    CommandParameter="{Binding .}" />
                         </StackLayout>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

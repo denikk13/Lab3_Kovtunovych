@@ -1,73 +1,53 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using lab_1.Services;
+using lab_1.ViewModels;
+using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Events;
 
-namespace lab_1
+namespace lab_1;
+
+public static class MauiProgram
 {
-    public static class MauiProgram
+    public static MauiApp CreateMauiApp()
     {
-        public static MauiApp CreateMauiApp()
-        {
-            var logDirectory = Path.Combine(FileSystem.AppDataDirectory, "logs");
-            Directory.CreateDirectory(logDirectory);
-            var logFilePath = Path.Combine(logDirectory, "app-.log");
+        var builder = MauiApp.CreateBuilder();
 
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .WriteTo.File(
-                    path: logFilePath,
-                    rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 7,
-                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
-                .CreateLogger();
-
-            RegisterGlobalExceptionHandlers();
-
-            var builder = MauiApp.CreateBuilder();
-            builder
-                .UseMauiApp<App>()
-                .ConfigureFonts(fonts =>
-                {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                });
-
-            builder.Logging.ClearProviders();
-            builder.Logging.AddSerilog(dispose: true);
-
-#if DEBUG
-            builder.Logging.AddDebug();
-#endif
-
-            builder.Services.AddSingleton<Services.IAppStateService, Services.AppStateService>();
-
-            return builder.Build();
-        }
-
-        private static void RegisterGlobalExceptionHandlers()
-        {
-            AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        builder
+            .UseMauiApp<App>()
+            .ConfigureFonts(fonts =>
             {
-                if (args.ExceptionObject is Exception ex)
-                {
-                    Log.Fatal(ex, "Unhandled AppDomain exception (IsTerminating: {IsTerminating})", args.IsTerminating);
-                }
-                else
-                {
-                    Log.Fatal("Unhandled non-CLR exception: {ExceptionObject}", args.ExceptionObject);
-                }
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+            });
 
-                Log.CloseAndFlush();
-            };
+        // Serilog
+        var logDirectory = Path.Combine(FileSystem.AppDataDirectory, "logs");
+        Directory.CreateDirectory(logDirectory);
+        var logFilePath = Path.Combine(logDirectory, "app-.log");
 
-            TaskScheduler.UnobservedTaskException += (_, args) =>
-            {
-                Log.Error(args.Exception, "Unobserved task exception");
-                args.SetObserved();
-            };
-        }
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.File(
+                path: logFilePath,
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 7,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .CreateLogger();
+
+        builder.Logging.AddSerilog(dispose: true);
+
+        // Сервіси сесії та автентифікації
+        builder.Services.AddSingleton<ISessionService, SessionService>();
+        builder.Services.AddSingleton<IAuthService, AuthService>();
+
+        // ViewModels та сторінки
+        builder.Services.AddTransient<LoginViewModel>();
+        builder.Services.AddTransient<Views.LoginPage>();
+
+        builder.Services.AddTransient<StudentViewModel>();
+        builder.Services.AddTransient<MainPage>();
+
+        builder.Services.AddTransient<Views.LogsPage>();
+
+        return builder.Build();
     }
 }

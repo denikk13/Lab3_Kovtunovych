@@ -7,7 +7,12 @@
     xmlns:views="clr-namespace:lab_1.Views"
     Title="lab_1">
 
-    <TabBar>
+    <ShellContent
+        Title="Login"
+        ContentTemplate="{DataTemplate views:LoginPage}"
+        Route="LoginPage" />
+
+    <TabBar Route="MainTabs">
         <ShellContent
             Title="Students"
             ContentTemplate="{DataTemplate local:MainPage}"

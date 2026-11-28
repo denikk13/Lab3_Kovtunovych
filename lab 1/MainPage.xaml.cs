@@ -1,22 +1,21 @@
-﻿namespace lab_1
+﻿using lab_1.ViewModels;
+
+namespace lab_1;
+
+public partial class MainPage : ContentPage
 {
-    public partial class MainPage : ContentPage
+    private readonly StudentViewModel _viewModel;
+
+    public MainPage(StudentViewModel viewModel)
     {
-        public MainPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+        _viewModel = viewModel;
+        BindingContext = _viewModel;
+    }
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-            System.Diagnostics.Debug.WriteLine("LOG: Головна сторінка зі студентами з'явилася на екрані");
-        }
-
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
-            System.Diagnostics.Debug.WriteLine("LOG: Головна сторінка зникла (відкрили деталі або згорнули)");
-        }
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        _viewModel.RefreshRoleState();
     }
 }

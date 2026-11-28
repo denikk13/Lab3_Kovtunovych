@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using lab_1.Views;
+using Serilog;
 
 namespace lab_1
 {
@@ -11,7 +12,10 @@ namespace lab_1
             InitializeComponent();
 
             Routing.RegisterRoute("studentdetail", typeof(Views.StudentDetailPage));
-            _logger.Information("AppShell initialized and route 'studentdetail' registered");
+            Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
+            Routing.RegisterRoute(nameof(MainPage), typeof(MainPage));
+
+            _logger.Information("AppShell initialized and routes 'studentdetail', 'LoginPage', 'MainPage' registered");
         }
 
         protected override void OnNavigating(ShellNavigatingEventArgs args)
